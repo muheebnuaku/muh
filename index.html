@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kenpachi Zaraki's Software Evolution Quiz</title>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+          background: #f0f2f5;
+          color: #1c1e21;
+          min-height: 100vh;
+          padding: 2rem;
+        }
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+        .progress-bar {
+          width: 100%;
+          height: 8px;
+          background: #e4e6eb;
+          border-radius: 4px;
+          margin: 1rem 0;
+        }
+        .progress {
+          height: 100%;
+          background: #1877f2;
+          border-radius: 4px;
+          transition: width 0.3s ease;
+        }
+        .question-card, .result-card {
+          background: white;
+          border-radius: 12px;
+          padding: 2rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          margin-bottom: 1rem;
+        }
+        .question-number {
+          color: #1877f2;
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+        }
+        .question-text {
+          font-size: 1.2rem;
+          margin-bottom: 1.5rem;
+          line-height: 1.5;
+        }
+        .options-container {
+          display: grid;
+          gap: 1rem;
+        }
+        .option-btn {
+          padding: 1rem;
+          border: 2px solid #e4e6eb;
+          border-radius: 8px;
+          background: none;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 1rem;
+        }
+        .option-btn:hover {
+          background: #f5f6f7;
+          border-color: #1877f2;
+        }
+        .option-btn.correct {
+          background: #d4edda;
+          border-color: #28a745;
+          color: #28a745;
+        }
+        .option-btn.wrong {
+          background: #f8d7da;
+          border-color: #dc3545;
+          color: #dc3545;
+        }
+        .disabled {
+          pointer-events: none;
+          opacity: 0.7;
+        }
+        .result-card {
+          text-align: center;
+          display: none;
+        }
+        .result-card h2 {
+          margin-bottom: 1rem;
+        }
+        #restart-btn {
+          padding: 0.8rem 1.2rem;
+          border: none;
+          background: #1877f2;
+          color: white;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background 0.3s ease;
+        }
+        #restart-btn:hover {
+          background: #0f5dc1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Zaraki's S.E Quiz</h1>
+        <div class="progress-bar">
+            <div class="progress" style="width: 1%"></div>
+        </div>
+    </div>
+
+    <div id="quiz-container">
+        <div class="question-card">
+            <div class="question-number">Question <span id="current-question">1</span>/100</div>
+            <div class="question-text" id="question-text"></div>
+            <div class="options-container" id="options-container"></div>
+        </div>
+    </div>
+
+    <div id="result-container" class="result-card">
+        <h2>Quiz Completed!</h2>
+        <p id="score-text"></p>
+        <button id="restart-btn">Restart Quiz</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+      {
+        question: "What is the primary goal of software evolution?",
+        options: [
+          "To completely rewrite existing systems",
+          "To adapt software to changing requirements",
+          "To reduce development costs",
+          "To eliminate all bugs in the system"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which law of software evolution states that software must be continually adapted or it becomes progressively less useful?",
+        options: [
+          "Lehman's first law",
+          "Brooks' law",
+          "Conway's law",
+          "Moore's law"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which term describes the gradual degradation of software performance over time due to accumulated changes?",
+        options: [
+          "Software decay",
+          "Feature creep",
+          "Technical debt",
+          "Bug accumulation"
+        ],
+        answer: 0
+      },
+      {
+        question: "What does 'technical debt' refer to in software evolution?",
+        options: [
+          "Delayed project timelines",
+          "Future cost incurred by choosing an easy solution now",
+          "Accumulated bugs",
+          "Software documentation"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which phase involves modifying the software to correct faults?",
+        options: [
+          "Evolution",
+          "Maintenance",
+          "Refactoring",
+          "Deployment"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which activity is essential during software evolution to ensure code quality?",
+        options: [
+          "Debugging",
+          "Code refactoring",
+          "Initial development",
+          "Requirement gathering"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following best describes 'code refactoring'?",
+        options: [
+          "Improving the internal structure of the code without changing its external behavior",
+          "Adding new features",
+          "Optimizing code for performance",
+          "Rewriting code from scratch"
+        ],
+        answer: 0
+      },
+      {
+        question: "Lehman's laws of software evolution were primarily developed based on studies of which type of software?",
+        options: [
+          "Embedded systems",
+          "Real-time systems",
+          "Large-scale commercial software",
+          "Video games"
+        ],
+        answer: 2
+      },
+      {
+        question: "Which law of software evolution states that the complexity of a system increases unless work is done to reduce it?",
+        options: [
+          "Lehman's law of increasing complexity",
+          "Lehman's law of conservation of familiarity",
+          "Lehman's law of continuing change",
+          "Lehman's law of self-regulation"
+        ],
+        answer: 0
+      },
+      {
+        question: "In the context of software evolution, what is 'regression testing'?",
+        options: [
+          "Testing new features",
+          "Testing to ensure that recent changes haven't adversely affected existing functionality",
+          "Testing performance improvements",
+          "Testing documentation accuracy"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a benefit of proper software evolution?",
+        options: [
+          "Immediate cost reduction",
+          "Long-term system stability and adaptability",
+          "Complete elimination of bugs",
+          "Instant performance gains"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the primary challenge during the evolution of legacy systems?",
+        options: [
+          "High documentation quality",
+          "Modern architecture compatibility",
+          "Low user base",
+          "Abundant resources"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process involves updating software documentation to reflect changes made during evolution?",
+        options: [
+          "Reverse engineering",
+          "Version control",
+          "Maintenance",
+          "Refactoring"
+        ],
+        answer: 2
+      },
+      {
+        question: "Which tool is commonly used to manage code changes during software evolution?",
+        options: [
+          "IDE",
+          "Version control system",
+          "Compiler",
+          "Debugger"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a risk of continuous software evolution?",
+        options: [
+          "Increased complexity",
+          "Reduced system functionality",
+          "Immediate obsolescence",
+          "Decreased market relevance"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which methodology emphasizes continuous evolution and iterative development?",
+        options: [
+          "Waterfall",
+          "Agile",
+          "V-Model",
+          "Spiral"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is an example of a non-functional requirement that may drive software evolution?",
+        options: [
+          "User interface aesthetics",
+          "Data privacy",
+          "Feature list",
+          "Database schema"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which software evolution law states that the complexity of software increases unless actions are taken to reduce it?",
+        options: [
+          "Lehman's first law",
+          "Lehman's second law",
+          "Lehman's law of increasing complexity",
+          "Lehman's law of entropy"
+        ],
+        answer: 2
+      },
+      {
+        question: "Which practice helps manage technical debt during software evolution?",
+        options: [
+          "Ignoring code smells",
+          "Regular code refactoring",
+          "Adding more features",
+          "Increasing code redundancy"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is a common cause of software evolution?",
+        options: [
+          "Static requirements",
+          "Changing business needs",
+          "Fixed scope",
+          "Stable technology"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process involves the identification and removal of redundant code?",
+        options: [
+          "Code optimization",
+          "Code refactoring",
+          "Debugging",
+          "Documentation"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what is 'legacy code'?",
+        options: [
+          "Code written in a legacy language",
+          "Old code that is still in use",
+          "Automatically generated code",
+          "Third-party library code"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the purpose of a code review during software evolution?",
+        options: [
+          "To write new features",
+          "To improve code quality and catch errors",
+          "To test user experience",
+          "To finalize documentation"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following can lead to software obsolescence?",
+        options: [
+          "Frequent updates",
+          "Lack of maintenance",
+          "Proper documentation",
+          "Rigorous testing"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which term describes software that is continually updated to meet evolving requirements?",
+        options: [
+          "Static software",
+          "Dynamic software",
+          "Living software",
+          "Adaptive software"
+        ],
+        answer: 3
+      },
+      {
+        question: "Which phase of the software lifecycle is directly concerned with incorporating new features?",
+        options: [
+          "Deployment",
+          "Evolution",
+          "Design",
+          "Testing"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process is crucial to mitigate risks associated with software evolution?",
+        options: [
+          "Ignoring user feedback",
+          "Implementing automated tests",
+          "Avoiding documentation",
+          "Skipping maintenance"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which concept emphasizes minimal changes to achieve significant improvements?",
+        options: [
+          "Big Bang refactoring",
+          "Incremental change",
+          "Radical redesign",
+          "Complete overhaul"
+        ],
+        answer: 1
+      },
+      {
+        question: "What does 'feature creep' refer to in software evolution?",
+        options: [
+          "Gradual addition of features leading to complexity",
+          "A method of optimizing features",
+          "A strategy to reduce technical debt",
+          "An approach to simplify user interfaces"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following best describes 'software maintenance'?",
+        options: [
+          "Developing entirely new software",
+          "Modifying software after its initial release",
+          "Testing software before release",
+          "Documenting software processes"
+        ],
+        answer: 1
+      },
+      {
+        question: "How does version control assist in software evolution?",
+        options: [
+          "By providing user analytics",
+          "By tracking and managing code changes",
+          "By enhancing software performance",
+          "By generating automatic code"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is a common strategy to manage software complexity?",
+        options: [
+          "Monolithic architecture",
+          "Modular design",
+          "Tightly coupled systems",
+          "Random code additions"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what is the benefit of automated testing?",
+        options: [
+          "Manual code reviews",
+          "Quick identification of bugs",
+          "Increased documentation",
+          "Reduced code readability"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is NOT a Lehman law of software evolution?",
+        options: [
+          "Increasing complexity",
+          "Continuing change",
+          "Declining performance",
+          "Constant learning curve"
+        ],
+        answer: 3
+      },
+      {
+        question: "What is one of the main challenges in evolving legacy systems?",
+        options: [
+          "Modern hardware support",
+          "Scarce documentation",
+          "Excessive automation",
+          "Rapid prototyping"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of these is an indicator that software evolution is needed?",
+        options: [
+          "High user satisfaction",
+          "Frequent bug reports",
+          "Stable performance",
+          "Minimal change requests"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which best practice helps prevent software evolution issues?",
+        options: [
+          "Delayed testing",
+          "Continuous integration",
+          "One-time deployment",
+          "Single-phase development"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which term describes the removal of outdated features during software evolution?",
+        options: [
+          "Deprecation",
+          "Refactoring",
+          "Enhancement",
+          "Normalization"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following can be a sign of technical debt?",
+        options: [
+          "Clean code",
+          "Quick fixes",
+          "Robust architecture",
+          "Well-documented code"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the effect of accumulating technical debt on software evolution?",
+        options: [
+          "Improved performance",
+          "Increased maintenance effort",
+          "Enhanced security",
+          "Simpler codebase"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which method can help address technical debt?",
+        options: [
+          "Postponing code reviews",
+          "Refactoring regularly",
+          "Increasing code redundancy",
+          "Avoiding testing"
+        ],
+        answer: 1
+      },
+      {
+        question: "What does 'backward compatibility' mean in software evolution?",
+        options: [
+          "Ability to run on older hardware",
+          "Compatibility with older versions",
+          "Supporting future updates",
+          "Enhancing system security"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a risk when evolving software too rapidly?",
+        options: [
+          "Improved user engagement",
+          "Introducing new bugs",
+          "Enhanced security",
+          "Better performance"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which aspect is vital for ensuring smooth software evolution?",
+        options: [
+          "Poor planning",
+          "Stakeholder involvement",
+          "Avoiding feedback",
+          "Skipping testing"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what is the role of a Continuous Integration (CI) system?",
+        options: [
+          "To generate documentation",
+          "To integrate code changes frequently",
+          "To manage project budgets",
+          "To plan features"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which practice minimizes disruption during software updates?",
+        options: [
+          "Batch updates",
+          "Incremental releases",
+          "Delayed deployments",
+          "Major overhauls"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process involves analyzing software to determine potential improvements?",
+        options: [
+          "Performance testing",
+          "Code review",
+          "User acceptance testing",
+          "System monitoring"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a key factor in successful software evolution?",
+        options: [
+          "Ignoring market trends",
+          "Continuous improvement",
+          "Static code architecture",
+          "Limited user feedback"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which type of maintenance involves adding new features?",
+        options: [
+          "Corrective maintenance",
+          "Adaptive maintenance",
+          "Perfective maintenance",
+          "Preventive maintenance"
+        ],
+        answer: 2
+      },
+      {
+        question: "What is one common technique to reduce software complexity?",
+        options: [
+          "Adding more lines of code",
+          "Modularization",
+          "Ignoring errors",
+          "Monolithic architecture"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is considered a best practice for managing software evolution?",
+        options: [
+          "Code freezing",
+          "Continuous integration and delivery",
+          "Delayed updates",
+          "Single milestone releases"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which software evolution practice involves systematic investigation of system failures?",
+        options: [
+          "Post-mortem analysis",
+          "Prototyping",
+          "User training",
+          "Market analysis"
+        ],
+        answer: 0
+      },
+      {
+        question: "What is the purpose of software evolution metrics?",
+        options: [
+          "To measure code aesthetics",
+          "To track progress and quality",
+          "To determine salary increases",
+          "To plan marketing strategies"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a challenge associated with software evolution?",
+        options: [
+          "Stable requirements",
+          "Rapid technology changes",
+          "Over-documented code",
+          "Low user expectations"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which approach helps in managing multiple versions of evolving software?",
+        options: [
+          "Branching in version control",
+          "Ignoring legacy code",
+          "Single release strategy",
+          "Avoiding updates"
+        ],
+        answer: 0
+      },
+      {
+        question: "In software evolution, what is 'refactoring debt'?",
+        options: [
+          "Debt incurred by not refactoring code",
+          "Financial cost of software licenses",
+          "User dissatisfaction",
+          "Overtime for developers"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following best describes 'legacy system modernization'?",
+        options: [
+          "Creating a new system from scratch",
+          "Enhancing an existing outdated system",
+          "Archiving old software",
+          "Documenting legacy code"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which term refers to the systematic process of replacing outdated components in a software system?",
+        options: [
+          "Refactoring",
+          "Reengineering",
+          "Retrofitting",
+          "Releasing"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which aspect of software evolution focuses on enhancing user experience?",
+        options: [
+          "Performance tuning",
+          "UI/UX redesign",
+          "Code refactoring",
+          "Database optimization"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which practice involves gathering feedback from end users for continuous improvement?",
+        options: [
+          "User surveys",
+          "Market analysis",
+          "Stakeholder meetings",
+          "Internal testing"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following can hinder effective software evolution?",
+        options: [
+          "Frequent updates",
+          "Rigid architectures",
+          "User feedback",
+          "Modern frameworks"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process is used to identify areas of code that require refactoring?",
+        options: [
+          "Code smells detection",
+          "Market analysis",
+          "Performance benchmarking",
+          "User experience studies"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which term is used to describe unintended negative consequences of changes in software?",
+        options: [
+          "Regression",
+          "Enhancement",
+          "Deprecation",
+          "Normalization"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which best practice ensures that software changes do not break existing functionality?",
+        options: [
+          "Regression testing",
+          "Feature enhancement",
+          "Documentation updates",
+          "User interface design"
+        ],
+        answer: 0
+      },
+      {
+        question: "In the context of software evolution, what is the significance of a 'release cycle'?",
+        options: [
+          "Time between major updates",
+          "Interval between code commits",
+          "Duration of user training",
+          "Length of documentation process"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following describes 'adaptive maintenance'?",
+        options: [
+          "Fixing bugs",
+          "Enhancing performance",
+          "Adapting to changing environments",
+          "Rewriting the system completely"
+        ],
+        answer: 2
+      },
+      {
+        question: "What role does 'automation' play in software evolution?",
+        options: [
+          "Increases manual testing",
+          "Speeds up repetitive tasks",
+          "Delays deployment",
+          "Complicates code reviews"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which practice involves systematically improving code without changing its behavior?",
+        options: [
+          "Refactoring",
+          "Feature addition",
+          "Bug fixing",
+          "Deployment"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which metric is often used to measure software complexity?",
+        options: [
+          "Cyclomatic complexity",
+          "User satisfaction",
+          "Bug count",
+          "Lines of documentation"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which best describes the concept of 'incremental development'?",
+        options: [
+          "Developing all features at once",
+          "Developing and releasing in small segments",
+          "Complete system overhaul",
+          "Skipping testing phases"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is an example of software evolution in cloud computing?",
+        options: [
+          "Static hosting",
+          "Continuous deployment",
+          "On-premise only solutions",
+          "Manual updates"
+        ],
+        answer: 1
+      },
+      {
+        question: "What does 'backlog refinement' involve in agile software evolution?",
+        options: [
+          "Adding new features",
+          "Prioritizing and updating tasks",
+          "Eliminating user feedback",
+          "Writing code documentation"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following helps in planning software evolution?",
+        options: [
+          "Ad-hoc changes",
+          "Roadmapping",
+          "Ignoring trends",
+          "One-off fixes"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what is the importance of user feedback?",
+        options: [
+          "It slows down development",
+          "It guides future improvements",
+          "It replaces testing",
+          "It is rarely used"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a consequence of neglecting software evolution?",
+        options: [
+          "Increased innovation",
+          "System obsolescence",
+          "Enhanced performance",
+          "User satisfaction"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which strategy can help balance new feature development and maintenance?",
+        options: [
+          "Ignoring technical debt",
+          "Parallel development",
+          "Complete rewrites",
+          "Delayed updates"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a challenge when integrating new technology into existing software?",
+        options: [
+          "Seamless integration",
+          "Compatibility issues",
+          "Immediate cost savings",
+          "Enhanced performance"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which factor can accelerate the need for software evolution?",
+        options: [
+          "Stable market trends",
+          "Rapid technology change",
+          "Low user base",
+          "Robust infrastructure"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which of the following is a best practice when planning for software evolution?",
+        options: [
+          "Lack of planning",
+          "Comprehensive testing",
+          "Ignoring scalability",
+          "Fixed design"
+        ],
+        answer: 1
+      },
+      {
+        question: "What does the term 'scalability' refer to in software evolution?",
+        options: [
+          "Ability to handle increased load",
+          "Complexity of code",
+          "Ease of debugging",
+          "User interface design"
+        ],
+        answer: 0
+      },
+      {
+        question: "In software evolution, which of the following ensures consistent code quality?",
+        options: [
+          "Automated testing",
+          "Random code changes",
+          "Delayed integration",
+          "Ad-hoc reviews"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which phase of the software lifecycle is dedicated to adapting and enhancing software post-deployment?",
+        options: [
+          "Development",
+          "Maintenance",
+          "Retirement",
+          "Planning"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which best practice can help in tracking software evolution progress?",
+        options: [
+          "Version control",
+          "Random code changes",
+          "Manual updates",
+          "Fixed design"
+        ],
+        answer: 0
+      },
+      {
+        question: "In the context of software evolution, what is the purpose of code modularity?",
+        options: [
+          "Increase dependency",
+          "Enhance maintainability",
+          "Complicate integration",
+          "Reduce flexibility"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the impact of regular software updates on user experience?",
+        options: [
+          "User confusion",
+          "Improved reliability",
+          "Increased bugs",
+          "Outdated features"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which process is used to determine which parts of the code require updates?",
+        options: [
+          "Code review",
+          "User interviews",
+          "Market analysis",
+          "Design brainstorming"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which term describes a systematic method for evaluating and improving software?",
+        options: [
+          "Heuristic analysis",
+          "Code inspection",
+          "Formal verification",
+          "Technical analysis"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what does 'regression' mean?",
+        options: [
+          "New feature development",
+          "Reversion to previous system state",
+          "Introduction of new bugs",
+          "Backward compatibility issues"
+        ],
+        answer: 2
+      },
+      {
+        question: "Which concept involves planning for future software changes during the design phase?",
+        options: [
+          "YAGNI",
+          "Design for change",
+          "Hard coding",
+          "Fixed architecture"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the significance of user-centric design in software evolution?",
+        options: [
+          "Prioritizes user needs in updates",
+          "Focuses solely on code structure",
+          "Ignores usability",
+          "Emphasizes documentation over design"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which of the following is an advantage of automated regression testing?",
+        options: [
+          "Reduces manual effort",
+          "Slows down deployment",
+          "Increases code complexity",
+          "Neglects edge cases"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which aspect of software evolution addresses security vulnerabilities?",
+        options: [
+          "Performance tuning",
+          "Bug fixing",
+          "Security patching",
+          "User interface redesign"
+        ],
+        answer: 2
+      },
+      {
+        question: "What is a common reason for software updates in rapidly changing industries?",
+        options: [
+          "Stable regulations",
+          "Emerging technologies",
+          "Static market trends",
+          "Fixed user requirements"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which practice is important for managing distributed software teams during evolution?",
+        options: [
+          "Centralized development",
+          "Collaboration tools",
+          "Individual coding",
+          "No documentation"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which strategy helps in managing conflicting requirements during software evolution?",
+        options: [
+          "Ignoring stakeholder input",
+          "Prioritization and trade-off analysis",
+          "Delaying updates",
+          "Uniform design approach"
+        ],
+        answer: 1
+      },
+      {
+        question: "In software evolution, what does 'continuous delivery' imply?",
+        options: [
+          "Manual deployment",
+          "Frequent automated releases",
+          "Delayed updates",
+          "Batch processing"
+        ],
+        answer: 1
+      },
+      {
+        question: "What is the role of performance monitoring in software evolution?",
+        options: [
+          "Identify performance bottlenecks",
+          "Increase code redundancy",
+          "Eliminate testing",
+          "Focus on aesthetics"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which factor is critical when planning a major software update?",
+        options: [
+          "User feedback",
+          "Fixed architecture",
+          "Static requirements",
+          "Infrequent communication"
+        ],
+        answer: 0
+      },
+      {
+        question: "Which software evolution practice can help in maintaining high code quality?",
+        options: [
+          "Ad-hoc fixes",
+          "Regular code reviews",
+          "Ignoring refactoring",
+          "Avoiding automated tests"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which term best describes the ongoing process of updating and improving software?",
+        options: [
+          "Software maintenance",
+          "Software evolution",
+          "Legacy management",
+          "System overhaul"
+        ],
+        answer: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const currentQuestionSpan = document.getElementById('current-question');
+    const progressBar = document.querySelector('.progress');
+    const quizContainer = document.getElementById('quiz-container');
+    const resultContainer = document.getElementById('result-container');
+    const scoreText = document.getElementById('score-text');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function showQuestion() {
+      currentQuestionSpan.textContent = currentQuestion + 1;
+      progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+      const q = questions[currentQuestion];
+      questionText.textContent = q.question;
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'option-btn';
+        button.textContent = option;
+        button.addEventListener('click', () => handleAnswer(index));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function handleAnswer(selectedIndex) {
+      const options = document.querySelectorAll('.option-btn');
+      const correctIndex = questions[currentQuestion].answer;
+
+      options.forEach(option => option.classList.add('disabled'));
+
+      if (selectedIndex === correctIndex) {
+        options[selectedIndex].classList.add('correct');
+        score++;
+        setTimeout(nextQuestion, 1000);
+      } else {
+        options[selectedIndex].classList.add('wrong');
+        options[correctIndex].classList.add('correct');
+        setTimeout(() => {
+          // Remove color cues if the answer is wrong
+          options.forEach(option => {
+            option.classList.remove('disabled', 'correct', 'wrong');
+          });
+        }, 1500);
+      }
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      quizContainer.style.display = 'none';
+      resultContainer.style.display = 'block';
+      scoreText.textContent = `Your Score: ${score} out of ${questions.length}`;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      resultContainer.style.display = 'none';
+      quizContainer.style.display = 'block';
+      progressBar.style.width = '1%';
+      showQuestion();
+    }
+
+    restartBtn.addEventListener('click', restartQuiz);
+
+    // Initialize quiz
+    showQuestion();
+</script>
+</body>
+</html>
